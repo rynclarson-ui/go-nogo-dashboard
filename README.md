@@ -1,8 +1,8 @@
 # Alto Cirra Seeding Go/No-Go Dashboard
 
-A single-page decision tool for winter cloud seeding operations near Woodward Park City, Utah. It walks an operator through five decision gates and shows whether conditions support seeding, need watching, or rule it out.
+Decision tool for winter cloud seeding operations near Woodward Park City, Utah. It walks an operator through five decision gates and shows whether conditions support seeding.
 
-**Live demo:** _add your GitHub Pages link here_
+**Live demo:** 
 
 ## What it does
 
