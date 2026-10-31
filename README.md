@@ -2,7 +2,7 @@
 
 Decision tool for winter cloud seeding operations near Woodward Park City, Utah. It walks an operator through five decision gates and shows whether conditions support seeding.
 
-**Live demo:** 
+**Live demo:** https://rynclarson-ui.github.io/go-nogo-dashboard/
 
 ## What it does
 
