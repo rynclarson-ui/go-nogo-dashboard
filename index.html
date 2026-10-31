@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Alto Cirra go/no-go dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e2e9ee;--ink:#0d1e2a;--mu:#4a6071;--ln:#b4c3cd;--fd:#f1f5f8;--rail:#0e2130;--rf:#dce8ef;--rm:#8da6b6;--mr:#ef6fae;--mag:#b3236b;--ac:#b3236b;--go:#23864f;--hold:#e2a928;--no:#c5392b;--og:#fff;--oh:#1b1503;--on:#fff;--band:#c7dbe8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a141b;--ink:#e3edf2;--mu:#93a9b7;--ln:#27394a;--fd:#112029;--rail:#0f1e29;--rf:#dce8ef;--rm:#7f98a8;--mag:#f06aa9;--ac:#f06aa9;--go:#43b36e;--hold:#e7b73e;--no:#ee6d5e;--og:#04140b;--oh:#1b1503;--on:#1f0704;--band:#1e3a4d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a141b;--ink:#e3edf2;--mu:#93a9b7;--ln:#27394a;--fd:#112029;--rail:#0f1e29;--rf:#dce8ef;--rm:#7f98a8;--mag:#f06aa9;--ac:#f06aa9;--go:#43b36e;--hold:#e7b73e;--no:#ee6d5e;--og:#04140b;--oh:#1b1503;--on:#1f0704;--band:#1e3a4d;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Archivo",system-ui,-apple-system,"Segoe UI",sans-serif}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--mag);outline-offset:2px}
+.rail :focus-visible{outline-color:var(--mr)}
+.app{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}
+.rail{background:var(--rail);color:var(--rf);padding:24px 16px;display:flex;flex-direction:column;gap:26px}
+.brand{font-stretch:68%;font-weight:800;font-size:2rem;line-height:1;padding:0 8px}
+.brand small{display:block;font-stretch:100%;font-weight:400;font-size:.85rem;color:var(--rm);margin-top:6px}
+.rail h2{font-size:.88rem;font-weight:600;color:var(--rm);margin:0 0 6px 8px}
+.rail ul,.rail ol{list-style:none;margin:0;padding:0}
+.cd,.gt{display:block;width:100%;border:0;background:none;color:var(--rf);text-align:left;padding:8px 8px 8px 30px;position:relative;border-radius:2px}
+.cd::before{content:"";position:absolute;left:9px;top:13px;width:10px;height:10px;border:2px solid var(--rm);border-radius:50%}
+.cd[aria-pressed="true"],.gt[aria-current="true"]{background:rgba(255,255,255,.1)}
+.cd[aria-pressed="true"]::before{background:var(--mr);border-color:var(--mr)}
+.cd b,.gt b{display:block;font-weight:600;line-height:1.25}
+.cd small,.gt small{display:block;color:var(--rm);font-size:.8rem}
+.gt{display:flex;gap:10px;padding-left:8px}
+.gates li{position:relative}
+.gates li+li::before{content:"";position:absolute;left:19px;top:-6px;height:12px;width:2px;background:rgba(255,255,255,.2)}
+.nd{flex:none;width:24px;height:24px;display:grid;place-items:center;margin-top:1px}
+.sy{display:inline-block;width:12px;height:12px;background:var(--rm);flex:none}
+.sy.pass{background:var(--go);border-radius:50%}
+.sy.watch{background:var(--hold);transform:rotate(45deg) scale(.82)}
+.sy.fail{background:var(--no)}
+.site{padding:0 8px}.site h2{margin-left:0}.site b{display:block;font-weight:700}.site small{display:block;color:var(--rm);font-size:.82rem}
+.scn{display:flex;flex-direction:column;gap:6px;margin:0 8px}
+.rb{border:1px solid var(--rm);background:none;color:var(--rf);padding:6px 10px;text-align:left;border-radius:2px}
+.rn{margin:8px 8px 0;color:var(--rm);font-size:.8rem}
+main{min-width:0;padding-bottom:40px}
+.band{padding:24px 28px 22px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;background:var(--band);color:var(--ink)}
+.band.go{background:var(--go);color:var(--og)}.band.hold{background:var(--hold);color:var(--oh)}.band.nogo{background:var(--no);color:var(--on)}
+.band h2{margin:0;font-stretch:62%;font-weight:800;font-size:clamp(3.4rem,10vw,6.8rem);line-height:.9}
+.band p{margin:8px 0 0;max-width:60ch}
+.act{display:flex;gap:8px;flex-wrap:wrap}
+.bt{padding:9px 16px;border:2px solid currentColor;background:transparent;color:inherit;font-weight:600;border-radius:0}
+.bt.f{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.bt:disabled{opacity:.45;cursor:not-allowed}
+.sec{display:grid;grid-template-columns:210px minmax(0,1fr);gap:8px 28px;margin:0 28px;padding:20px 0 26px;border-top:2px solid var(--ink)}
+.band+.sec{margin-top:22px}
+.sh h3{margin:0;font-stretch:72%;font-weight:700;font-size:1.5rem;line-height:1.1}
+.sh p{margin:6px 0 0;color:var(--mu);font-size:.88rem}
+.row{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(120px,1.5fr) 76px 92px;gap:2px 14px;align-items:center;padding:8px 0;border-top:1px solid var(--ln)}
+.row:first-child{border-top:0;padding-top:0}
+.row label{font-weight:500}.row label span{color:var(--mu);font-weight:400}
+.row small{grid-column:1/-1;color:var(--mu);font-size:.8rem}
+input[type=range]{width:100%;accent-color:var(--mag)}
+input[type=number]{width:76px;font:inherit;font-variant-numeric:tabular-nums;padding:3px 4px;border:0;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:0}
+.st{display:flex;align-items:center;gap:7px;font-weight:600}
+.note{margin-top:14px;padding:10px 14px;background:var(--fd)}
+.sdg{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.sdg p{margin:0;max-width:30ch;color:var(--mu)}
+svg text{fill:var(--mu);font-size:10px;font-family:inherit}
+.mw{overflow-x:auto}.mw svg{width:100%;min-width:640px;height:auto;display:block}
+.mc-pass{fill:var(--go)}.mc-watch{fill:var(--hold)}.mc-fail{fill:var(--no)}.mc-none{fill:none;stroke:var(--ln)}
+svg text.tx-pass{fill:var(--og)}svg text.tx-watch{fill:var(--oh)}svg text.tx-fail{fill:var(--on)}
+.lg{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--mu);margin-top:8px}.lg i{margin-right:6px;vertical-align:-1px}
+.recs{display:grid;grid-template-columns:1fr;gap:24px;margin-top:18px}
+.rtt{display:flex;align-items:center;gap:10px;font-stretch:70%;font-weight:800;font-size:2rem;line-height:1}
+.rh{font-weight:700}
+.recs p{margin:6px 0;color:var(--mu)}.recs ul{margin:6px 0 0;padding-left:18px}.recs li{margin-bottom:3px}
+.ev{grid-column:1/-1;margin-top:4px;font-size:.84rem}
+.ev summary{cursor:pointer;color:var(--ac);font-weight:600}
+.evd{margin:8px 0 4px;display:grid;grid-template-columns:120px minmax(0,1fr);gap:4px 14px}
+.evd dt{color:var(--mu);font-weight:600}.evd dd{margin:0;max-width:80ch}
+.tier{margin-left:8px;padding:1px 6px;border:1px solid var(--ln);font-size:.72rem;font-weight:500;color:var(--mu)}
+.rg{color:var(--mu);font-size:.84rem;margin:2px 0}.srcl{padding-left:20px;font-size:.84rem;max-width:90ch}.srcl li{margin:4px 0}
+.ev a,.evd a{color:var(--ac)}
+@media(max-width:860px){.evd{grid-template-columns:1fr}}
+.fine{margin:6px 28px 0;color:var(--mu);font-size:.8rem;max-width:90ch}
+.tl{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 28px;background:var(--rail);color:var(--rf)}
+.tl button{border:1px solid var(--rm);background:none;color:var(--rf);padding:4px 12px;border-radius:2px;min-width:40px}
+.tl input[type=range]{flex:1 1 220px;accent-color:var(--mr)}
+.tl output{font-weight:700;font-variant-numeric:tabular-nums;min-width:96px}
+.tl small{color:var(--rm)}
+.tg{font-size:.7rem;border:1px solid var(--ln);padding:0 5px;margin-left:6px;color:var(--mu)}
+@media(max-width:860px){.tl{padding:10px 16px}}
+@media(max-width:860px){.app{grid-template-columns:1fr}.sec{grid-template-columns:1fr;margin:0 16px}.band{padding:20px 16px;grid-template-columns:1fr}.recs{grid-template-columns:1fr}.fine{margin:6px 16px 0}}
+@media(max-width:520px){.row{grid-template-columns:1fr 76px 92px}.row input[type=range]{grid-column:1/-1;grid-row:2}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="rail">
+  <div class="site"><h2>Site</h2><b>Woodward Park City</b><small>6,500 to 6,800 ft</small></div>
+  <div><h2>Storm to replay</h2><ul id="cands"></ul></div>
+  <div><h2>Decision gates</h2><ol class="gates" id="strip"></ol></div>
+</aside>
+<main>
+  <div class="tl" role="group" aria-label="Storm time"><button id="tp">Play</button><button id="tb" aria-label="Back one hour">&#8249;</button><input type="range" id="ts" min="0" max="35" value="0" aria-label="Storm time, hours from start"><button id="tf" aria-label="Forward one hour">&#8250;</button><output id="tlab" aria-live="off"></output><small id="tsrc"></small></div>
+  <section class="band hold" id="dec" aria-live="polite">
+    <div><h2 id="dt">Hold</h2><p id="dd"></p><p id="da"></p></div>
+  </section>
+  <section class="sec" aria-label="Forecast briefing"><div class="sh" id="bh"></div><div id="brief"></div></section>
+  <section class="sec" aria-label="Gate detail"><div class="sh" id="ph"></div><div id="panel"></div></section>
+  <section class="sec" aria-label="Sources"><div class="sh"><h3>Sources</h3></div><div id="evid"></div></section>
+  <p class="fine"></p>
+</main>
+</div>
+<script>
+// row: key,label,unit,min,max,step,value,passLo,passHi,watchLo,watchHi,hint
+const R=(a)=>({k:a[0],l:a[1],u:a[2],min:a[3],max:a[4],s:a[5],v:a[6],p:[a[7],a[8]],w:[a[9],a[10]],h:a[11]||''});
+const G=[
+{n:'Model candidates',s:'Ensemble forecast',d:'',
+ c:[R(['ens','Ensemble agreement','%',0,100,1,78,60,100,45,100,'']),
+    R(['slw','Supercooled liquid probability','%',0,100,1,64,50,100,30,100,'']),
+    R(['ivt','Moisture transport (IVT)','kg/m/s',0,1200,10,410,200,750,100,1000,'']),
+    R(['ctt','Cloud top temperature','°C',-50,0,0.5,-22,-30,-10,-30,-8,''])]},
+{n:'Soundings',s:'',d:'',
+ c:[R(['t7','Temperature at 700 mb','°C',-30,5,0.5,-9,-15,-5,-18,-3,'']),
+    R(['ws','Crest-level wind speed','m/s',0,45,1,17,10,25,7,32]),
+    R(['fr','Froude number','',0,3,0.05,0.9,0.5,3,0.3,3,'']),
+    R(['sd','Supercooled layer depth','m',0,2000,25,900,500,2000,250,2000]),
+    R(['ct','Temperature at crest height','°C',-30,5,0.5,-9,-15,-5,-18,-3,''])]},
+{n:'Radar',s:'',d:'',
+ c:[R(['cov','Echo coverage over target','%',0,100,1,62,40,100,20,100]),
+    R(['dbz','Maximum reflectivity','dBZ',0,60,1,22,15,30,3,38,'']),
+    R(['trd','Intensity trend, last 30 min','dBZ',-20,10,1,-1,-3,10,-8,10,'']),
+    ]},
+{n:'Surface sites',s:'',d:'',
+ c:[R(['st','Surface temperature','°C',-25,10,0.5,-3,-25,1,1,1,'']),
+    R(['sw','Surface wind','m/s',0,35,1,8,0,20,0,20]),
+    R(['pr','Precipitation rate','mm/h',0,10,0.1,1.2,0,4,0,6]),]},
+{n:'Aircraft measurements',s:'',d:'',
+ c:[R(['lwc','Liquid water content','g/m³',0,0.6,0.01,0.18,0.1,0.6,0.05,0.6,'Need water for seeding']),
+    R(['at','In-cloud temperature','°C',-25,5,0.5,-9,-15,-5,-18,-3]),
+    R(['bat','Aircraft battery','%',0,100,1,78,40,100,25,100]),
+    R(['rd','Release distance upwind of target','km',0,100,1,30,20,50,10,70,'']),
+    R(['ra','Release point offset from wind line','°',0,180,1,8,0,20,0,40,'Angle between the wind direction and the line from release point to target. 0 is directly up wind'])]}
+];
+const CAND=[
+ {n:'New Year storm',a:'Jan 1 to 2, 2025',doc:'NWS advisory for the Wasatch and West Uinta mountains called for 6 to 12 in of snow, up to 18 in in the upper Cottonwoods.',v:[70,58,320,-22]},
+ {n:'March storm',a:'Mar 17 to 18, 2025',doc:'',v:[65,44,230,-27]},
+ {n:'West-northwest flow storm',a:'Dec 4 to 7, 2025',doc:'NWS winter storm warning for the Wasatch Back: about 2 to 6 in at lower elevations and 8 to 14 in higher up.',v:[75,68,520,-21]}];
+let cur=0,sel=0,auth=null,last=null,T=0,timer=null,N=36;
+const $=s=>document.querySelector(s);
+const tm=()=>labT(T);
+const st=c=>c.v>=c.p[0]&&c.v<=c.p[1]?'pass':c.v>=c.w[0]&&c.v<=c.w[1]?'watch':'fail';
+const gs=g=>{const s=g.c.map(st);return s.includes('fail')?'fail':s.includes('watch')?'watch':'pass'};
+const LB={pass:'Pass',watch:'Watch',fail:'Fail'};
+const rng=c=>c.p[0]<=c.min?`up to ${c.p[1]}`:c.p[1]>=c.max?`at least ${c.p[0]}`:`${c.p[0]} to ${c.p[1]}`;
+const hint=c=>`Pass: ${rng(c)} ${c.u}`.trim()+(c.h?`. ${c.h}.`:'');
+
+function strip(){
+  $('#strip').innerHTML=G.map((g,i)=>`<li><button class="gt" data-i="${i}"><span class="nd"><i class="sy"></i></span><span><b>${i+1}. ${g.n}</b><small id="gm${i}"></small></span></button></li>`).join('');
+  document.querySelectorAll('.gt').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;panel();upd()});
+}
+function cands(){
+  $('#cands').innerHTML=CAND.map((c,i)=>`<li><button class="cd" data-c="${i}" aria-pressed="${i===sel}"><b>${c.n}</b><small>${c.a}</small></button></li>`).join('');
+  document.querySelectorAll('.cd').forEach(b=>b.onclick=()=>{sel=+b.dataset.c;stop();setCand();cands();setTime(startT())});
+}
+// ---- Evidence and method ----
+// Tier A: a number or limit appears in a program document or peer-reviewed study.
+// Tier B: calculated from a published relationship or definition.
+// Tier C: no published value found; operator judgment to be calibrated.
+// Source quality: P = program report or journal paper, S = secondary (news report, abstract, listing page).
+const SRC={
+1:['NAWC, Western Uintas Annual Cloud Seeding Report, 2024-25 (Utah Division of Water Resources)','https://water.utah.gov/wp-content/uploads/2025/09/Western-Uintas-2024-25.pdf','P'],
+2:['Ralph et al. 2019, A scale to characterize the strength and impacts of atmospheric rivers, BAMS 100','https://doi.org/10.1175/BAMS-D-18-0023.1','P'],
+3:['Jennings et al. 2018, Spatial variation of the rain-snow temperature threshold, Nature Communications 9','https://pmc.ncbi.nlm.nih.gov/articles/PMC5861046','P'],
+4:['Phadtare et al. 2022, Froude-number-based rainfall regimes over the Western Ghats, QJRMS (F = U/NH)','https://eprints.whiterose.ac.uk/190460/1/QJ-21-0351.pdf','P'],
+5:['Espitalie 2020, Froude number and real mountain flow, Wind River Range','https://www.proquest.com/pqdtlocal1005743/docview/2453156143/abstract/CE766FC5F9C64C59PQ/1','S'],
+6:['Evaluation of the Utah Operational Weather Modification Program, 1982','https://dnrweblink.state.co.us/CWCB/0/doc/122838/Page27.aspx','P'],
+7:['Investigations of Winter Storms in Utah, 1986','https://dnrweblink.state.co.us/CWCB/0/doc/122345/Page36.aspx','P'],
+8:['Aircraft cloud liquid water statistics','https://dnrweblink.state.co.us/CWCB/0/doc/122655/Page54.aspx','P'],
+9:['US DOE, Modeling cloud seeding conditions under a warmer climate in Utah','https://eesm.science.energy.gov/research-highlights/modeling-examination-cloud-seeding-conditions-under-warmer-climate-utah','S'],
+10:['Xie et al. 2025, SNOWIE seeding case study','https://par.nsf.gov/search/author:%22French,%20Jeffery%20R%22','S'],
+11:['NWS wind advisory criteria for northern Utah','https://www.fox13now.com/2013/11/21/high-wind-and-winter-weather-advisories-issued-for-parts-of-utah','S'],
+12:['NWS Western Region technical attachment on KMTX radar beam blockage','https://www.weather.gov/media/wrh/online_publications/TAs/ta9735.pdf','P'],
+13:['NWS, Upper air observations','https://www.weather.gov/upperair/','P'],
+14:['Two multirotor UAVs for glaciogenic cloud seeding, CLOUDLAB, Atmos. Meas. Tech. 17 (2024)','https://amt.copernicus.org/articles/17/601/2024/','P'],
+15:['NRCS SNOTEL brochure','https://webarchive.library.unt.edu/web/20161224184846/http://www.wcc.nrcs.usda.gov/snotel/snotel_brochure.pdf','P']
+};
+const NP='Not based on published value. ';
+const BASIS={
+ens:{t:'C',p:'Not based on published value. Reasonable range: 60% or more of members agree.',w:'45 to 60%.',h:'Share of ensemble members (ex. HRRR) with precipitation at the target inside the window',s:[]},
+slw:{t:'C',p:NP+'Reasonable range is 50% or more of members show supercooled liquid water at or below crest height.',w:'30 to 50%.',h:'Share of members with forecast liquid water path above 0.01 mm [9] and temperature below 0 °C. Get from HRRR cloud liquid water forecast.',s:[8]},
+ivt:{t:'A',p:'Atmospheric river scale [2]: 250 to 500 kg/m/s is weak. Pass runs to 750 because we probably dont want to seed really strong storms. The 200 floor is because lots of storms we might want to seed are not AR. This measure may not be useful for non AR storms. [2].',h:'From HRRR or GFS profiles [13].',s:[2,13]},
+ctt:{t:'A',p:'Criteria from report seeds clouds with tops between -30 and -10 °C [7].',w:'-30 to -8 °C',h:'Top of the saturated layer in a sounding, or satellite infrared temperature',s:[7,13]},
+t7:{t:'A',p:'Matches criteria in report, AgI activation temperature [1].',w:'-18 to -3 °C.',h:'Radiosonde, HRRR forecast, aircraft sensors',s:[1]},
+ws:{t:'A',p:'Report states seeding criteria as 50 kt (26 m/s) max at 700 mb [6]. The 10 m/s lower bound is not based on a published value, but weaker wind may carry material too short a distance in the 15 to 40 min needed for ice crystals to grow [10].',w:'7 to 32 m/s',h:'Radiosonde, ridge-top anemometers',s:[6,10]},
+fr:{t:'A',p:'Fr = U / (N h) [4]. Report gives threshold of 0.56 [5], so 0.5 is used.',w:'0.3 to 0.5.',h:'Calculate U from sounding wind, N from sounding temperature and humidity, h from barrier height. Assumes N = 0.011 per second and h = 1.1 km.',s:[4,5]},
+sd:{t:'B',p:'Not based on published value, but should still check layer is deep enough. Based on report in [8] seems like layers can be as thin as 200-300m',w:'',h:'Depth of the saturated layer in a sounding or HRRR profile.',s:[7]},
+ct:{t:'A',p:'Matches criteria in report, AgI activation temperature [1]. Crest height is close to 700 mb in Wasatch',w:'-18 to -3 °C',h:'Radiosonde, HRRR forecast, aircraft sensors',s:[1]},
+cov:{t:'C',p:'Not based on published value. Reasonable range probably 40%',w:'20 to 40%.',h:'Fraction of radar pixels in the target polygon above 5 dBZ. [12]',s:[11]},
+dbz:{t:'C',p:'Report states 15 to 30 dBZ [12]. Below 15 there is little precipitating ice and above 30 the storm is already percipitating effectively',w:'3 to 38 dBZ.',h:'Maximum reflectivity in the target polygon from radar',s:[11]},
+trd:{t:'C',p:'Dont want to seed if the storm is weakening quickly.Reasonable range is -3 dBZ or better over 30 min.',w:'-8 to -3 dBZ.',h:'Change in maximum reflectivity over the target between the latest scan and a scan about 30 min earlier.',s:[11]},
+st:{t:'A',p:'Rain and snow are equally likely at an average of 1.0 °C [3]. Pass is 1 °C or colder, with no lower limit.',w:'',h:'Air temperature sensor at the site',s:[2]},
+sw:{t:'B',p:'If surface winds are too high conditions might not be suitable to fly. NWS wind advisors starts at ~20m/s. Would change depending on aircraft',w:'20 m/s, the advisory gust threshold [11].',h:'anemometer at site',s:[10]},
+pr:{t:'C',p:'Not based on published value. Reasonable range: 0 to 4 mm/h snow water equivalent. Seeding is probably not as useful when it is snowing harder.',w:'4 to 6 mm/h.',h:'Heated tipping-bucket or weighing gauge, or a disdrometer, at the site. SNOTEL gauges [15]',s:[14]},
+lwc:{t:'A',p:'Report states minimum of  0.1g/m^3 needed for cloud seeding to be viable[8]',w:'0.05 to 0.1 g/m³',h:'optical particle spectrometer [14]',s:[8,14]},
+at:{t:'A',p:'Matches criteria in report, AgI activation temperature [1]',w:'-18 to -3 °C',h:'temperature sensor corrected for wetting (CLOUDLAB UAV: 0.1 K) [14] with position and altitude.',s:[1,14]},
+bat:{t:'C',p:'Not based on published value 40% reasonable threshold',w:'25 to 40%.',h:'aircraft battery system',s:[13]},
+rd:{t:'B',p:'Distance = wind speed * ice growth time. Snow formed 15 to 40 min after release in SNOWIE [10]. At 10 to 25 m/s that is 9 to 60 km; pass uses mid range 20 to 50 km',w:'10 to 70 km',h:'Aircraft GPS position at release versus the target. Travel time = distance / wind speed.',s:[9]},
+ra:{t:'B',p:'Location = distance from target * tan(offset). At 30 km, 8° = 4 km and 20° = 11 km. Derived distance from time and wind speed in [10]. Acceptable miss depends on storm width and location size',w:'Up to 40°',h:'Angle between flight-level wind direction and the bearing from release point to target. From the aircraft wind estimate or latest sounding.',s:[9]}
+};
+const TIER={A:['Published','A number or limit appears in a program document or peer-reviewed study.'],B:['Derived','Calculated from a published relationship or definition.'],C:['Not based on published value','Reasonable range chosen. ']};
+const openEv=new Set();
+const refs=ids=>ids.map(i=>`<a href="#src${i}">[${i}]</a>`).join(' ');
+const linkRefs=s=>s.replace(/\[(\d+)\]/g,(m,n)=>`<a href="#src${n}">[${n}]</a>`);
+const evBlock=k=>{const b=BASIS[k];if(!b)return'';return `<dl class="evd"><dt>Pass range</dt><dd>${linkRefs(b.p)}</dd><dt>How it is measured</dt><dd>${linkRefs(b.h)}</dd>${b.s.length?`<dt>Sources</dt><dd>${refs(b.s)}</dd>`:''}</dl>`};
+const evRow=c=>{const b=BASIS[c.k];if(!b)return'';return `<details class="ev" data-k="${c.k}"${openEv.has(c.k)?' open':''}><summary>Justification</summary>${evBlock(c.k)}</details>`};
+const dyn=c=>{
+  if(c.k==='rd'){const w=G[1].c[1].v;return ``}
+  if(c.k==='ra'){const d=G[4].c[3].v;return ``}
+  return ''};
+function evidence(){
+  $('#evid').innerHTML=`<ol class="srcl">${Object.keys(SRC).map(i=>`<li id="src${i}"><a href="${SRC[i][1]}" target="_blank" rel="noopener">${SRC[i][0]}</a></li>`).join('')}</ol>`;
+}
+
+function panel(){
+  const g=G[cur];
+  $('#ph').innerHTML=`<h3>${cur+1}. ${g.n}</h3><p>${g.d}</p>`;
+  let h=g.c.map((c,i)=>`<div class="row"><label for="n${i}">${c.l}${c.u?` <span>${c.u}</span>`:''}</label>
+   <input type="range" aria-label="${c.l}" data-i="${i}" min="${c.min}" max="${c.max}" step="${c.s}" value="${c.v}">
+   <input type="number" id="n${i}" data-i="${i}" min="${c.min}" max="${c.max}" step="${c.s}" value="${c.v}"><span class="st" id="ch${i}"></span><small>${hint(c)}<span class="dy" data-k="${c.k}">${dyn(c)}</span></small>${evRow(c)}</div>`).join('');
+  if(cur===1)h+=`<div class="sdg"><svg id="snd" viewBox="0 0 270 250" width="270" height="250" role="img" aria-label="Temperature profile with seedable band"></svg><p>Profile built from your inputs; the dashed line marks the site elevation. The shaded band marks the seedable range of −5 to −15 °C; the green line shows the aircraft’s in-cloud temperature.</p></div>`;
+  if(cur===4)h+='<div class="note" id="win"></div>';
+  $('#panel').innerHTML=h;
+  document.querySelectorAll('#panel details.ev').forEach(d=>d.ontoggle=()=>d.open?openEv.add(d.dataset.k):openEv.delete(d.dataset.k));
+  document.querySelectorAll('#panel input').forEach(e=>e.oninput=()=>{const c=G[cur].c[+e.dataset.i];if(e.value==='')return;c.v=+e.value;
+    document.querySelectorAll(`#panel [data-i="${e.dataset.i}"]`).forEach(o=>{if(o!==e)o.value=c.v});document.querySelectorAll('#panel .dy').forEach(d=>{const cc=G[cur].c.find(x=>x.k===d.dataset.k);d.textContent=dyn(cc)});upd()});
+}
+function setCand(){(CAND[sel].v||[]).forEach((v,i)=>G[0].c[i].v=v)}
+function sounding(){
+  const el=$('#snd');if(!el)return;const f=k=>G[1].c.find(c=>c.k===k).v;
+  const t7=f('t7'),ctt=G[0].c[3].v,top=3+(t7-ctt)/6.5,su=G[3].c[0].v,ts=su+6.5*2,tt=ctt;
+  const X=t=>20+(t+30)/35*235,Y=z=>225-z/8*210;
+  const pts=[[0,ts],[2,su],[3,t7],[Math.max(top,3.1),tt]].sort((a,b)=>a[0]-b[0]);
+  const at=G[4].c[1].v;
+  let s=`<rect x="${X(-15)}" y="${Y(8)}" width="${X(-5)-X(-15)}" height="${Y(0)-Y(8)}" fill="var(--band)"/>`;
+  [0,2,4,6,8].forEach(z=>s+=`<text x="2" y="${Y(z)+3}">${z}</text><line x1="18" x2="255" y1="${Y(z)}" y2="${Y(z)}" stroke="var(--ln)"/>`);
+  [-30,-20,-10,0].forEach(t=>s+=`<text x="${X(t)-8}" y="242">${t}°</text>`);
+  s+=`<line x1="18" x2="255" y1="${Y(2)}" y2="${Y(2)}" stroke="var(--ink)" stroke-dasharray="5 3"/><text x="24" y="${Y(2)-4}" style="fill:var(--ink)"></text>`;
+  s+=`<line x1="${X(0)}" x2="${X(0)}" y1="${Y(8)}" y2="${Y(0)}" stroke="var(--mu)" stroke-dasharray="3 3"/>`;
+  s+=`<line x1="${X(at)}" x2="${X(at)}" y1="${Y(8)}" y2="${Y(0)}" stroke="var(--go)" stroke-width="2"/><text x="${X(at)+3}" y="22" style="fill:var(--go)">aircraft</text>`;
+  s+=`<polyline fill="none" stroke="var(--ac)" stroke-width="2.5" points="${pts.map(p=>`${X(Math.max(-30,Math.min(5,p[1])))},${Y(Math.min(8,p[0]))}`).join(' ')}"/><text x="2" y="10">km</text>`;
+  el.innerHTML=s;
+}
+// Forecast briefing: [value outside storm, value at storm peak] per variable, peak hour and width
+const FC=[
+ {t:[2025,0,1,0],pk:20,w:9,n:36,o:{ivt:-3,ws:-2,t7:3,ct:3,fz:3},slw:[10,58],ivt:[60,320],t7:[-4,-10],fz:[2.4,1.4],ws:[10,20],pr:[0,1.8],ct:[-3,-9],ctt:[-6,-22]},
+ {t:[2025,2,17,12],pk:14,w:5,n:36,o:{ivt:-2,ws:-1,t7:2,ct:2,fz:2},slw:[8,44],ivt:[50,230],t7:[-3,-9],fz:[2.4,1.6],ws:[9,18],pr:[0,1.4],ct:[-2,-8],ctt:[-8,-27]},
+ {t:[2025,11,5,0],pk:26,w:12,n:72,o:{ivt:-6,ws:-4,t7:6,ct:6,fz:6},slw:[10,70],ivt:[80,520],t7:[-4,-6],fz:[2.3,1.9],ws:[10,24],pr:[0,1.6],ct:[-3,-6],ctt:[-8,-21]}];
+const FK=['slw','ctt','t7','ct','fz','ws','ivt','pr'];
+const FV=[['slw','Supercooled liquid probability','%',G[0].c[1]],['ctt','Cloud top temperature','°C',G[0].c[3]],['t7','Temperature at 700 mb','°C',G[1].c[0]],['ct','Temperature at crest height','°C',G[1].c[4]],['st','Surface temperature','°C',G[3].c[0]],['ws','Crest wind speed','m/s',G[1].c[1]],['ivt','Moisture transport','kg/m/s',G[0].c[2]],['pr','Precipitation rate','mm/h',G[3].c[2]]];
+const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function brief(){
+  const f=FC[sel]||{};N=nOf();const lab=labT;
+  const H=[],tally={};
+  for(let h=0;h<N;h++){
+    const fr=frame(h),I=RL()?(fr.cov>=20||fr.pr>=.1?1:0):Math.exp(-(((h-f.pk)/f.w)**2)),v={};
+    FV.forEach(x=>v[x[0]]=fr[x[0]]);
+    let k='none';
+    if(I>=.25){k='pass';FV.forEach(x=>{const s=st({v:v[x[0]],p:x[3].p,w:x[3].w});
+      if(s!=='pass'){tally[x[1]]=tally[x[1]]||[0,0];tally[x[1]][s==='fail'?0:1]++;if(s==='fail')k='fail';else if(k==='pass')k='watch'}})}
+    H.push({h,v,k,I});
+  }
+  const runs=ok=>{const r=[];let a=null;H.forEach((x,i)=>{if(ok(x)){if(a===null)a=i}else if(a!==null){r.push([a,i-1]);a=null}});if(a!==null)r.push([a,N-1]);return r};
+  const best=a=>a.sort((x,y)=>(y[1]-y[0])-(x[1]-x[0]))[0];
+  let w=best(runs(x=>x.k==='pass')),kind='pass';
+  if(!w){w=best(runs(x=>x.k==='watch'||x.k==='pass'));kind='watch'}
+  const dur=w?w[1]-w[0]+1:0,ens=G[0].c[0].v,conf=ens>=60?'high':ens>=45?'moderate':'low';
+  let rk,rt,acts;
+  if(w&&kind==='pass'&&dur>=2&&ens>=45){rk='go';rt='Prepare to seed';acts=[``]}
+  else if(w){rk='hold';rt='Stand by';acts=[``,'','']}
+  else{rk='nogo';rt='Stand down';acts=[``,'']}
+  const lim=Object.entries(tally).sort((a,b)=>(b[1][0]*2+b[1][1])-(a[1][0]*2+a[1][1])).slice(0,2).map(([n,c])=>`${n.toLowerCase()} (${c[0]} h fail, ${c[1]} h marginal)`);
+  const rs=[],hi=H.find(x=>x.I>=.25&&x.v.ivt>750),hp=H.find(x=>x.I>=.25&&x.v.pr>4);
+  if(hi)rs.push(`Moisture transport exceeds 750 kg/m/s from ${lab(hi.h)}. Flooding is possible`);
+  if(hp)rs.push(`Precipitation passes 4 mm/h near ${lab(hp.h)}, can't justify seeding`);
+  if(ens<60)rs.push(`Ensemble agreement is ${ens}%, so timing could shift by several hours.`);
+  const SN={slw:'Liquid chance, %',ct:'Crest temp, °C',ctt:'Cloud top, °C',t7:'700 mb temp, °C',st:'Surface temp, °C',ws:'Crest wind, m/s',ivt:'Moisture, kg/m/s',pr:'Precip, mm/h'};
+  const fv=(k,v)=>k==='st'||k==='pr'?v.toFixed(1):Math.round(v);
+  const CW=19,LW=150,TH=34,OH=34,RH=24,WID=LW+N*CW+4,HT=TH+OH+FV.length*RH+6;
+  const hh=h=>lab(h).slice(-5,-3);
+  let s='';
+  H.forEach(x=>{const X=LW+x.h*CW;
+    if(x.h%3===0)s+=`<text x="${X}" y="28">${hh(x.h)}</text>`;
+    if(x.h===0||hh(x.h)==='00')s+=`<line x1="${X}" x2="${X}" y1="2" y2="${HT-4}" stroke="var(--ink)"/><text x="${X+3}" y="11" style="fill:var(--ink);font-weight:600">${lab(x.h).slice(0,-6)}</text>`;
+    s+=`<rect x="${X+1}" y="${TH}" width="${CW-2}" height="${OH-4}" class="mc-${x.k}"><title>${lab(x.h)}</title></rect>`});
+  s+=`<text x="0" y="${TH+OH/2-2}" style="fill:var(--ink);font-weight:700;font-size:12px">Seeding suitability</text>`;
+  if(w)s+=`<rect x="${LW+w[0]*CW-1}" y="${TH-3}" width="${(w[1]-w[0]+1)*CW+1}" height="${OH+2}" fill="none" stroke="var(--ink)" stroke-width="2.5"/>`;
+  FV.forEach((v,r)=>{const Y=TH+OH+r*RH;
+    s+=`<text x="0" y="${Y+RH/2+3}" style="font-size:11px">${SN[v[0]]}</text>`;
+    H.forEach(x=>{const X=LW+x.h*CW;
+      if(x.I<.25){s+=`<rect x="${X+1}" y="${Y+1}" width="${CW-2}" height="${RH-2}" class="mc-none"/>`;return}
+      const q=st({v:x.v[v[0]],p:v[3].p,w:v[3].w});
+      s+=`<rect x="${X+1}" y="${Y+1}" width="${CW-2}" height="${RH-2}" class="mc-${q}"/>`+(x.h%3===0?`<text class="tx-${q}" x="${X+CW/2}" y="${Y+RH/2+3}" text-anchor="middle" style="font-size:9px">${fv(v[0],x.v[v[0]])}</text>`:'')})});
+  s+=`<rect x="${LW+T*CW}" y="2" width="${CW}" height="${HT-4}" fill="none" stroke="var(--mag)" stroke-width="2.5"/>`;
+  const sym={go:'pass',hold:'watch',nogo:'fail'}[rk];
+  $('#bh').innerHTML=`<h3>Forecast briefing</h3><p>${CAND[sel].n}, ${CAND[sel].a}</p><p>${CAND[sel].doc}</p><p>${RL()?'Hourly values are archived data. '+src(RL()):'Hourly values are reconstructed, not archived data.'}</p>`;
+  $('#brief').innerHTML=`<div class="mw"><svg viewBox="0 0 ${WID} ${HT}" role="img" aria-label="Hourly seeding suitability and forecast values for ${N} hours">${s}</svg></div>
+  <div class="lg"><span><i class="sy pass"></i>Seedable</span><span><i class="sy watch"></i>Marginal</span><span><i class="sy fail"></i>Unsuitable</span><span>Empty cells: no storm overhead. Outline: best window.</span></div>`;
+  const sv=$('#brief svg');sv.style.cursor='pointer';sv.onclick=e=>{const r=sv.getBoundingClientRect(),h=Math.floor(((e.clientX-r.left)*(WID/r.width)-LW)/CW);if(h>=0&&h<N)setTime(h)};
+}
+function decide(){
+  const s=G.map(gs),i=s.indexOf('fail');
+  const bad=g=>g.c.filter(c=>st(c)==='fail').map(c=>c.l.toLowerCase()).join(', ');
+  const wat=G.flatMap(g=>g.c.filter(c=>st(c)==='watch').map(c=>c.l.toLowerCase()));
+  if(i>=0)return{k:'nogo',t:'No-go',d:`Gate ${i+1}, ${G[i].n.toLowerCase()}, fails on ${bad(G[i])}.`,a:''};
+  if(s.every(x=>x==='pass'))return{k:'go',t:'Seeding Conditions Met',d:'All five gates pass',a:''};
+  return{k:'hold',t:'Hold',d:`${wat.length} measure${wat.length>1?'s are':' is'} marginal: ${wat.slice(0,4).join(', ')}${wat.length>4?' and more':''}.`,a:''};
+}
+function upd(){
+  G.forEach((g,i)=>{const b=document.querySelector(`.gt[data-i="${i}"]`);if(!b)return;const s=gs(g);b.querySelector('.sy').className='sy '+s;b.setAttribute('aria-current',i===cur);
+    $('#gm'+i).textContent=`${LB[s]}: ${g.c.filter(c=>st(c)==='pass').length} of ${g.c.length} criteria pass`});
+  G[cur].c.forEach((c,i)=>{const e=$('#ch'+i);if(e){const s=st(c);e.innerHTML='<i class="sy '+s+'"></i>'+LB[s]}});
+  sounding();brief();
+  const d=decide();$('#dec').className='band '+d.k;$('#dt').textContent=d.t;$('#dd').textContent=d.d;
+  $('#da').textContent=d.a;
+  const w=$('#win');if(w){const s=gs(G[4]);w.innerHTML=s===''}
+}
+const RL=()=>CAND[sel].real||null;
+const nOf=()=>RL()?RL().frames.length:FC[sel].n;
+const startT=()=>RL()?0:FC[sel].pk;
+const src=r=>r&&r.sources?'Sources: '+Object.entries(r.sources).map(([k,v])=>k+': '+v).join('; ')+'.':'';
+const T0=()=>RL()?new Date(RL().t0):new Date(...FC[sel].t);
+const labT=h=>{const d=new Date(T0().getTime()+h*36e5);return MO[d.getMonth()]+' '+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':00'};
+// Reconstructed storm: each variable follows its own pulse (offset in hours from the precipitation peak), then
+// surface and radar values are derived from the sounding so the rows stay consistent with each other.
+const base=h=>{const f=FC[sel],o={},g=off=>Math.exp(-(((h-f.pk-off)/f.w)**2));
+  FK.forEach(k=>{const i=g((f.o||{})[k]||0);o[k]=+(f[k][0]+(f[k][1]-f[k][0])*i).toFixed(2)});
+  const I=g(0),lap=-o.t7/(3-o.fz);            // lap: mean lapse rate below 700 mb, C/km
+  o.st=+Math.max(-25,Math.min(10,lap*(o.fz-2))).toFixed(1);       // temperature at the 2.0 km site
+  o.sw=Math.round(.45*o.ws);o.fr=+(o.ws/12.1).toFixed(2);          // Fr = U/(N h), N=0.011 /s, h=1.1 km
+  o.cov=Math.round(85*I);o.dbz=o.pr>.05?Math.round(10*Math.log10(200*o.pr**1.6)):0;   // Z=200 R^1.6
+  return o};
+const frame=h=>{if(RL())return RL().frames[h]||{};const o=base(h);o.trd=Math.round((o.dbz-base(h-1).dbz)/2);return o};
+function tlSync(){$('#ts').max=nOf()-1;$('#ts').value=T;$('#tlab').textContent=labT(T);$('#tsrc').textContent=RL()?'Archived data':'Reconstructed profile'}
+function setTime(h){T=Math.max(0,Math.min(nOf()-1,h));const fr=frame(T);
+  G.forEach(g=>g.c.forEach(c=>{if(fr[c.k]!=null)c.v=Math.min(c.max,Math.max(c.min,+fr[c.k]))}));tlSync();panel();upd()}
+function stop(){clearInterval(timer);timer=null;$('#tp').textContent='Play'}
+$('#tp').onclick=()=>{if(timer)return stop();if(T>=nOf()-1)setTime(0);$('#tp').textContent='Pause';
+  timer=setInterval(()=>{if(T>=nOf()-1)return stop();setTime(T+1)},700)};
+$('#tb').onclick=()=>{stop();setTime(T-1)};$('#tf').onclick=()=>{stop();setTime(T+1)};
+$('#ts').oninput=e=>{stop();setTime(+e.target.value)};
+setCand();strip();cands();evidence();setTime(startT());
+</script>
+</body>
+</html>
+
+</body></html>
+</body></html>
