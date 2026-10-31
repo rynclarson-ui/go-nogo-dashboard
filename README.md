@@ -22,8 +22,7 @@ Decision tool for winter cloud seeding operations near Woodward Park City, Utah.
 
 - Storm names, dates and snowfall come from National Weather Service alerts.
 - The hourly values are **reconstructed profiles** shaped to each storm's character, not archived model, sounding or radar data. Surface temperature, Froude number and radar values are derived from those profiles.
-- Where a published criterion exists (for example Utah operator limits, the atmospheric river scale, the rain-snow temperature threshold), the range follows it and is cited. Where none was found, the justification says so and gives a reasonable range instead. Those values are starting points to calibrate against operational data.
-- Not covered: natural ice concentration, low-level inversions, and hard stops such as permits, airspace, snowpack and flood limits.
+- Where a published criterion exists, the range follows it and is cited. Where none was found, the justification says so and gives a reasonable range instead. 
 
 ## Files
 
